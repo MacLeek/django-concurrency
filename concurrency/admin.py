@@ -109,12 +109,12 @@ class ConcurrencyActionMixin(object):
 
                     queryset = queryset.filter(reduce(operator.or_, filters))
                     if len(selected) != queryset.count():
-                        messages.error(request, 'One or more record were updated. '
-                                                '(Probably by other user) '
-                                                'The execution was aborted.')
+                        messages.error(request, '一条或多条记录被修改 '
+                                                '(有可能被其他用户改了) '
+                                                '执行中止')
                         return HttpResponseRedirect(".")
                 else:
-                    messages.warning(request, 'Selecting all records, you will avoid the concurrency check')
+                    messages.warning(request, '选中全部记录会跳过冲突检查！')
 
             response = func(self, request, queryset)
 
@@ -215,26 +215,26 @@ class ConcurrencyListEditableMixin(object):
         conflicts = self._get_conflicts(request)
         if conflicts:
             names = force_text(opts.verbose_name), force_text(opts.verbose_name_plural)
-            pattern = r"(?P<num>\d+) ({0}|{1})".format(*names)
+            pattern = r"(.*?)(?P<num>\d+) 个 ({0}|{1})".format(*names)
             rex = re.compile(pattern)
             m = rex.match(message)
             concurrency_errros = len(conflicts)
             if m:
                 updated_record = int(m.group('num')) - concurrency_errros
                 if updated_record == 0:
-                    message = _("No %(name)s were changed due conflict errors") % {'name': names[0]}
+                    message = _("因为有人在你之前做了修改，所以本次没有任何 %(name)s") % {'name': names[0]}
                 else:
                     ids = ",".join(map(str, conflicts))
                     messages.error(request,
-                                   ungettext("Record with pk `{0}` has been modified and was not updated",
-                                             "Records `{0}` have been modified and were not updated",
+                                   ungettext("ID为 `{0}` 的记录被修改但是没有保存到数据库中，因为有人在你之前已做了修改",
+                                             "ID为 `{0}` 的记录被修改但是没有保存到数据库中，因为有人在你之前已做了修改",
                                              concurrency_errros).format(ids))
                     if updated_record == 1:
                         name = force_text(opts.verbose_name)
                     else:
                         name = force_text(opts.verbose_name_plural)
-                    message = ungettext("%(count)s %(name)s was changed successfully.",
-                                        "%(count)s %(name)s were changed successfully.",
+                    message = ungettext("%(count)s %(name)s 修改成功",
+                                        "%(count)s %(name)s 修改成功",
                                         updated_record) % {'count': updated_record,
                                                            'name': name}
 
