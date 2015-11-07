@@ -184,22 +184,22 @@ class ConcurrencyListEditableMixin(object):
         else:
             return []
 
-    def save_model(self, request, obj, form, change):
-        try:
-            if change:
-                version = request.POST.get('_concurrency_version_{0.pk}'.format(obj), None)
-                if version:
-                    core._set_version(obj, version)
-            super(ConcurrencyListEditableMixin, self).save_model(request, obj, form, change)
-        except RecordModifiedError:
-            self._add_conflict(request, obj)
-            # If policy is set to 'silent' the user will be informed using message_user
-            # raise Exception if not silent.
-            # NOTE:
-            # list_editable_policy MUST have the LIST_EDITABLE_POLICY_ABORT_ALL
-            #   set to work properly
-            if self.list_editable_policy == CONCURRENCY_LIST_EDITABLE_POLICY_ABORT_ALL:
-                raise
+    # def save_model(self, request, obj, form, change):
+    #     try:
+    #         if change:
+    #             version = request.POST.get('_concurrency_version_{0.pk}'.format(obj), None)
+    #             if version:
+    #                 core._set_version(obj, version)
+    #         super(ConcurrencyListEditableMixin, self).save_model(request, obj, form, change)
+    #     except RecordModifiedError:
+    #         self._add_conflict(request, obj)
+    #         # If policy is set to 'silent' the user will be informed using message_user
+    #         # raise Exception if not silent.
+    #         # NOTE:
+    #         # list_editable_policy MUST have the LIST_EDITABLE_POLICY_ABORT_ALL
+    #         #   set to work properly
+    #         if self.list_editable_policy == CONCURRENCY_LIST_EDITABLE_POLICY_ABORT_ALL:
+    #             raise
 
     def log_change(self, request, object, message):
         if object.pk in self._get_conflicts(request):
