@@ -1,7 +1,7 @@
 VERSION=2.0.0
 BUILDDIR='~build'
 PYTHONPATH:=${PWD}/tests/:${PWD}
-DBENGINE?=sqlite
+DBENGINE?=pg
 DJANGO?='1.7.x'
 
 
@@ -32,18 +32,20 @@ test:
 	py.test -v
 
 
-coverage: mkbuilddir install-deps init-db
-	echo ${PYTHONPATH};
+ci: mkbuilddir install-deps init-db
+	$(MAKE) coverage
+
+coverage:
 	PYTHONPATH=${PWD}/tests/:${PWD} py.test tests -v --cov=concurrency --cov-report=html --cov-config=tests/.coveragerc -q
 
 
 clean:
 	rm -fr ${BUILDDIR} dist *.egg-info .coverage
-	find . -name __pycache__ -o -name "*.py?" -o -name "*.orig" -prune | xargs rm -rf
-	find concurrency/locale -name django.mo | xargs rm -f
+	find src -name __pycache__ -o -name "*.py?" -o -name "*.orig" -prune | xargs rm -rf
+	find src/concurrency/locale -name django.mo | xargs rm -f
 
 fullclean:
-	rm -fr .tox
+	rm -fr .tox .cache
 	$(MAKE) clean
 
 
